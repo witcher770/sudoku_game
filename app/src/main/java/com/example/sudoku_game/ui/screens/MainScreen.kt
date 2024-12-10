@@ -20,11 +20,20 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.sudoku_game.R
+import com.example.sudoku_game.data.DatabaseInstance
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,8 +41,20 @@ fun MainScreen(
     onSettingsClick: () -> Unit,
     onHistoryClick: () -> Unit,
     onNewGameClick: () -> Unit,
+    onLastGameClick: () -> Unit,
     onTutorialClick: () -> Unit
 ) {
+    var hasSavedGame by remember { mutableStateOf(false) }
+    val context = LocalContext.current // Получение контекста
+
+
+    LaunchedEffect(Unit) {
+        val lastGame = withContext(Dispatchers.IO) {
+            DatabaseInstance.getDatabase(context).sudokuDao().getLastGame()
+        }
+        hasSavedGame = lastGame != null
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -73,6 +94,15 @@ fun MainScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    if (hasSavedGame) {
+                        Button(onClick = onLastGameClick,
+                               modifier = Modifier
+                                   .fillMaxWidth(0.7f)
+                                   .padding(vertical = 8.dp)) {
+                            Text("Продолжить игру")
+                        }
+                    }
+
                     Button(
                         onClick = onHistoryClick,
                         modifier = Modifier

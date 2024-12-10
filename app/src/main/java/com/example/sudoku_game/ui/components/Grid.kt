@@ -12,6 +12,13 @@ class Grid(private val n: Int = 3) {
         println("The base table is ready!")
     }
 
+    fun get_grid(): Array<IntArray> {
+        return table
+    }
+    fun get_n(): Int {
+        return n
+    }
+
     fun show() {
         table.forEach { row ->
             println(row.joinToString(" "))
@@ -121,7 +128,7 @@ class Grid(private val n: Int = 3) {
 
 
 //fun main() {
-//    val example = Grid()
+//    val example = Grid(2)
 //    example.mix()
 //
 //    println("---------------------------")

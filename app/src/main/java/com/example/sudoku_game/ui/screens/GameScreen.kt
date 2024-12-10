@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,19 +35,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.sudoku_game.R
+import com.example.sudoku_game.models.SudokuDataModel
+import com.example.sudoku_game.models.SudokuViewModel
+import com.example.sudoku_game.ui.components.Grid
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(
-//    navController: NavController,
     onBackClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    sudokuViewModel: SudokuViewModel = viewModel()
 ) {
     var selectedNumber by remember { mutableStateOf<Int?>(null) }
     var eraseMode by remember { mutableStateOf(false) }
-    val sudokuGrid = remember { mutableStateOf(generateEmptySudokuGrid()) }
+    val sudokuGrid = remember { mutableStateOf(generateSudokuGrid()) }
+
+//    var grid by remember { mutableStateOf(Array(9) { Array<Int?>(9) { null } }) }
+
+    LaunchedEffect(Unit) {
+        val savedGrid = sudokuViewModel.loadLastGame()
+        if (savedGrid != null) {
+            sudokuGrid.value = savedGrid // Восстанавливаем состояние
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -82,11 +96,9 @@ fun GameScreen(
                     selectedNumber = selectedNumber,
                     eraseMode = eraseMode,
                     onCellClick = { row, col ->
-                        if (eraseMode) {
-                            sudokuGrid.value[row][col] = null
-                        } else if (selectedNumber != null) {
-                            sudokuGrid.value[row][col] = selectedNumber
-                        }
+                        val grid = sudokuGrid.value
+                        grid[row][col] = if (eraseMode) null else selectedNumber
+                        sudokuViewModel.saveGameState(grid) // Сохранение прогресса
                     }
                 )
             }
@@ -161,6 +173,17 @@ fun SudokuGrid(
     }
 }
 
-fun generateEmptySudokuGrid(): Array<Array<Int?>> {
-    return Array(9) { Array(9) { null } }
+fun generateSudokuGrid(): Array<Array<Int?>> {
+    val example = Grid()
+    example.mix()
+    example.generatePuzzle()
+    val intArrayGrid: Array<IntArray> = example.get_grid()
+    val nullableGrid: Array<Array<Int?>> = Array(example.get_n() * example.get_n()) { row ->
+        Array(example.get_n() * example.get_n()) { col ->
+            intArrayGrid[row][col].takeIf { it != 0 } // Преобразуем 0 в null, если нужно
+        }
+    }
+
+    return nullableGrid
+//    return Array(9) { Array(9) { null } }
 }

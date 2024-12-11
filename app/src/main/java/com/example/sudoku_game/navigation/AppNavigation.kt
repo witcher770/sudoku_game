@@ -27,7 +27,10 @@ fun AppNavigation() {
                 onSettingsClick = { navController.navigate("settings") },
                 onHistoryClick = { navController.navigate("history") },
 //                onNewGameClick = { navController.navigate("new_game") },
-                onNewGameClick = { navController.navigate("game_screen") },
+                onNewGameClick = {
+                    sudokuViewModel.clearGameHistory()
+                    navController.navigate("game_screen")
+                                 },
                 onLastGameClick = { navController.navigate("game_screen") },
                 onTutorialClick = { navController.navigate("tutorial") }
             )

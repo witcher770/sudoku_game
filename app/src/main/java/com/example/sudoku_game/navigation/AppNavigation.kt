@@ -3,10 +3,10 @@ package com.example.sudoku_game.navigation
 import android.app.Application
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.sudoku_game.models.GameSettingsViewModel
 import com.example.sudoku_game.models.SudokuViewModel
 import com.example.sudoku_game.ui.screens.GameScreen
 import com.example.sudoku_game.ui.screens.MainScreen
@@ -21,6 +21,7 @@ fun AppNavigation() {
         throw IllegalStateException("Context is not an Application context")
     }
     val sudokuViewModel = SudokuViewModel(context)
+    val gameSettingsViewModel = GameSettingsViewModel()
 
     NavHost(navController = navController, startDestination = "main_screen") {
         composable("main_screen") {
@@ -40,17 +41,18 @@ fun AppNavigation() {
             GameScreen(
                 onBackClick = { navController.navigate("main_screen") },
                 onSettingsClick = { navController.navigate("game_settings") },
-                sudokuViewModel
+                sudokuViewModel,
+                gameSettingsViewModel
             )
         }
 
         composable("game_settings") {
             SettingsGameScreen(
-                isAutoCheckEnabled = sudokuViewModel.isAutoCheckEnabled.value,
-                onAutoCheckChange = { sudokuViewModel.toggleAutoCheck() },
+                isAutoCheckEnabled = gameSettingsViewModel.isAutoCheckEnabled.value,
+                onAutoCheckChange = { gameSettingsViewModel.toggleAutoCheck() },
                 onBackClick = { navController.popBackStack() },
-//                onBackClick = { navController.navigate("main_screen") },
-                )
+//                onBackClick = { navController.navigate("game_screen") },
+            )
         }
 
         // Другие маршруты...

@@ -34,12 +34,5 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    var isAutoCheckEnabled = mutableStateOf(false)
-        private set
-
-    fun toggleAutoCheck() {
-        isAutoCheckEnabled.value = !isAutoCheckEnabled.value
-    }
-
 
 }

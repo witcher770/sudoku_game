@@ -22,8 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.sudoku_game.models.SudokuViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,7 +29,7 @@ import com.example.sudoku_game.models.SudokuViewModel
 fun SettingsGameScreen(
     isAutoCheckEnabled: Boolean,
     onAutoCheckChange: (Boolean) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -66,6 +64,7 @@ fun SettingsGameScreen(
                     checked = isAutoCheckEnabled,
                     onCheckedChange = onAutoCheckChange
                 )
+
             }
         }
     }

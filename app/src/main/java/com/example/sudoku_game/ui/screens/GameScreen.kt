@@ -1,6 +1,7 @@
 package com.example.sudoku_game.ui.screens
 
 import SudokuSolver
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +43,8 @@ import androidx.compose.foundation.layout.height
 
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.navigation.NavController
+import com.example.sudoku_game.models.GameSettingsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -53,9 +56,10 @@ import kotlinx.coroutines.withContext
 fun GameScreen(
     onBackClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    sudokuViewModel: SudokuViewModel = viewModel()
+    sudokuViewModel: SudokuViewModel = viewModel(),
+    gameSettingsViewModel: GameSettingsViewModel = viewModel(),
 ) {
-    var selectedNumber by remember { mutableStateOf<Int?>(null) }
+    var selectedNumber by remember { mutableStateOf<Int?>(1) }
     var eraseMode by remember { mutableStateOf(false) }
 //    val sudokuGrid = remember { mutableStateOf(generateEmptySudokuGrid()) }
     val sudokuGrid = remember { mutableStateOf<Array<Array<SudokuCell>>?>(null) }
@@ -123,13 +127,23 @@ fun GameScreen(
                         onCellClick = { row, col ->
                             val grid = sudokuGrid.value
                             if (grid != null && !grid[row][col].fixed) {
-                                grid[row][col] =
-                                    SudokuCell(if (eraseMode) null else selectedNumber, false)
-                                sudokuViewModel.saveGameState(grid) // Сохранение прогресса
+                                // Создаём новую копию сетки
+                                val newGrid = grid.map { rowArray ->
+                                    rowArray.map { cell -> cell.copy() }.toTypedArray()
+                                }.toTypedArray()
+
+                                // Обновляем значение в выбранной ячейке
+                                newGrid[row][col] = SudokuCell(
+                                    number = if (eraseMode) null else selectedNumber,
+                                    fixed = false
+                                )
+
+                                // Обновляем состояние сетки
+                                sudokuGrid.value = newGrid
+                                sudokuViewModel.saveGameState(newGrid) // Сохраняем прогресс
                             }
-
-
-                        }
+                        },
+                        gameSettingsViewModel,
                     )
 
                 }
@@ -182,7 +196,7 @@ fun SudokuGrid(
     selectedNumber: Int?,
     eraseMode: Boolean,
     onCellClick: (row: Int, col: Int) -> Unit,
-    sudokuViewModel: SudokuViewModel = viewModel()
+    gameSettingsViewModel: GameSettingsViewModel = viewModel(),
 ) {
     Column {
         for (row in grid.indices step 3) {
@@ -194,7 +208,7 @@ fun SudokuGrid(
                         grid = grid,
                         selectedNumber = selectedNumber,
                         eraseMode = eraseMode,
-                        isAutoCheckEnabled = sudokuViewModel.isAutoCheckEnabled.value,
+                        isAutoCheckEnabled = gameSettingsViewModel.isAutoCheckEnabled.value,
                         onCellClick = onCellClick
                     )
                 }
@@ -218,17 +232,29 @@ private fun SubGrid(
             Row {
                 for (ind_col in col until col + 3) {
                     val cell = grid[ind_row][ind_col]
+
+                    val a = isAutoCheckEnabled
+                    val b = cell.number != null
+                    val c = !SudokuSolver().isSellCorrect(
+                        grid.map { it.map { c -> c.number ?: 0 }.toIntArray() },
+                        ind_row,
+                        ind_col,
+                        cell.number
+                    )
+
                     val isError = isAutoCheckEnabled && cell.number != null &&
                             !SudokuSolver().isSellCorrect(
                                 grid.map { it.map { c -> c.number ?: 0 }.toIntArray() },
                                 ind_row,
                                 ind_col,
-                                cell.number!!
+                                cell.number
                             )
+                    Log.d("SudokuDebug", "Row: $ind_row, Col: $ind_col, Number: ${cell.number}, A: $a, B: $b, C:$c")
+
                     Box(
                         modifier = Modifier
                             .size(40.dp)
-                            .background(if (isError) Color.Red else Color.Transparent)
+                            .background(if (isError && !cell.fixed) Color.Red else Color.Transparent)
                             .border(1.dp, Color.Black)
                             .clickable { onCellClick(ind_row, ind_col) },
                         contentAlignment = Alignment.Center

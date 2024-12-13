@@ -1,12 +1,14 @@
 class SudokuSolver {
     private val solutions = mutableListOf<List<MutableList<Int>>>()
-    fun isSellCorrect(board: List<IntArray>, row: Int, col: Int, num: Int): Boolean {
+    fun isSellCorrect(board: List<IntArray>, row: Int, col: Int, num: Int?): Boolean {
         // Проверка строки
         for (c in board[row].indices) {
+            if (c == col) continue
             if (board[row][c] == num) return false
         }
         // Проверка столбца
         for (r in board.indices) {
+            if (r == row) continue
             if (board[r][col] == num) return false
         }
         // Проверка квадрата
@@ -15,6 +17,7 @@ class SudokuSolver {
         val startCol = col / sqrt * sqrt
         for (r in startRow until startRow + sqrt) {
             for (c in startCol until startCol + sqrt) {
+                if (c == col && r == row) continue
                 if (board[r][c] == num) return false
             }
         }

@@ -1,6 +1,9 @@
 package com.example.sudoku_game.models
 
 import android.app.Application
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import com.example.sudoku_game.data.DatabaseInstance
 import com.example.sudoku_game.ui.components.SudokuCell
@@ -30,4 +33,13 @@ class SudokuViewModel(application: Application) : AndroidViewModel(application) 
             dao.clearAllGames()
         }
     }
+
+    var isAutoCheckEnabled = mutableStateOf(false)
+        private set
+
+    fun toggleAutoCheck() {
+        isAutoCheckEnabled.value = !isAutoCheckEnabled.value
+    }
+
+
 }

@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.sudoku_game.models.SudokuViewModel
 import com.example.sudoku_game.ui.screens.GameScreen
 import com.example.sudoku_game.ui.screens.MainScreen
+import com.example.sudoku_game.ui.screens.SettingsGameScreen
 
 @Composable
 fun AppNavigation() {
@@ -42,6 +43,16 @@ fun AppNavigation() {
                 sudokuViewModel
             )
         }
+
+        composable("game_settings") {
+            SettingsGameScreen(
+                isAutoCheckEnabled = sudokuViewModel.isAutoCheckEnabled.value,
+                onAutoCheckChange = { sudokuViewModel.toggleAutoCheck() },
+                onBackClick = { navController.popBackStack() },
+//                onBackClick = { navController.navigate("main_screen") },
+                )
+        }
+
         // Другие маршруты...
     }
 }

@@ -1,30 +1,32 @@
 class SudokuSolver {
     private val solutions = mutableListOf<List<MutableList<Int>>>()
+    fun isSellCorrect(board: List<IntArray>, row: Int, col: Int, num: Int): Boolean {
+        // Проверка строки
+        for (c in board[row].indices) {
+            if (board[row][c] == num) return false
+        }
+        // Проверка столбца
+        for (r in board.indices) {
+            if (board[r][col] == num) return false
+        }
+        // Проверка квадрата
+        val sqrt = Math.sqrt(board.size.toDouble()).toInt()
+        val startRow = row / sqrt * sqrt
+        val startCol = col / sqrt * sqrt
+        for (r in startRow until startRow + sqrt) {
+            for (c in startCol until startCol + sqrt) {
+                if (board[r][c] == num) return false
+            }
+        }
+        return true
+    }
+
     // Основная функция для подсчёта решений
     fun countSolutions(rows: Int, cols: Int, board: List<IntArray>): Int {
         solutions.clear() // Очищаем список решений перед началом
         var solutionCount = 0
 
-        fun isValid(board: List<IntArray>, row: Int, col: Int, num: Int): Boolean {
-            // Проверка строки
-            for (c in 0 until cols) {
-                if (board[row][c] == num) return false
-            }
-            // Проверка столбца
-            for (r in 0 until rows) {
-                if (board[r][col] == num) return false
-            }
-            // Проверка квадрата
-            val sqrt = Math.sqrt(rows.toDouble()).toInt()
-            val startRow = row / sqrt * sqrt
-            val startCol = col / sqrt * sqrt
-            for (r in startRow until startRow + sqrt) {
-                for (c in startCol until startCol + sqrt) {
-                    if (board[r][c] == num) return false
-                }
-            }
-            return true
-        }
+
 
         fun solve(row: Int, col: Int): Boolean {
             if (row == rows) {
@@ -42,7 +44,7 @@ class SudokuSolver {
             }
 
             for (num in 1..rows) {
-                if (isValid(board, row, col, num)) {
+                if (isSellCorrect(board, row, col, num)) {
                     board[row][col] = num
                     if (solve(nextRow, nextCol)) return true
                     board[row][col] = 0 // Откат

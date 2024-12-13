@@ -1,5 +1,6 @@
 package com.example.sudoku_game.ui.screens
 
+import SudokuSolver
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -126,6 +127,8 @@ fun GameScreen(
                                     SudokuCell(if (eraseMode) null else selectedNumber, false)
                                 sudokuViewModel.saveGameState(grid) // Сохранение прогресса
                             }
+
+
                         }
                     )
 
@@ -178,7 +181,8 @@ fun SudokuGrid(
     grid: Array<Array<SudokuCell>>,
     selectedNumber: Int?,
     eraseMode: Boolean,
-    onCellClick: (row: Int, col: Int) -> Unit
+    onCellClick: (row: Int, col: Int) -> Unit,
+    sudokuViewModel: SudokuViewModel = viewModel()
 ) {
     Column {
         for (row in grid.indices step 3) {
@@ -190,6 +194,7 @@ fun SudokuGrid(
                         grid = grid,
                         selectedNumber = selectedNumber,
                         eraseMode = eraseMode,
+                        isAutoCheckEnabled = sudokuViewModel.isAutoCheckEnabled.value,
                         onCellClick = onCellClick
                     )
                 }
@@ -205,6 +210,7 @@ private fun SubGrid(
     grid: Array<Array<SudokuCell>>,
     selectedNumber: Int?,
     eraseMode: Boolean,
+    isAutoCheckEnabled: Boolean,
     onCellClick: (row: Int, col: Int) -> Unit
 ) {
     Column(modifier = Modifier.border(BorderStroke(3.dp, Color.Black))) {
@@ -212,9 +218,17 @@ private fun SubGrid(
             Row {
                 for (ind_col in col until col + 3) {
                     val cell = grid[ind_row][ind_col]
+                    val isError = isAutoCheckEnabled && cell.number != null &&
+                            !SudokuSolver().isSellCorrect(
+                                grid.map { it.map { c -> c.number ?: 0 }.toIntArray() },
+                                ind_row,
+                                ind_col,
+                                cell.number!!
+                            )
                     Box(
                         modifier = Modifier
                             .size(40.dp)
+                            .background(if (isError) Color.Red else Color.Transparent)
                             .border(1.dp, Color.Black)
                             .clickable { onCellClick(ind_row, ind_col) },
                         contentAlignment = Alignment.Center
@@ -229,6 +243,25 @@ private fun SubGrid(
         }
     }
 }
+
+fun isGameComplete(grid: Array<Array<SudokuCell>>): Boolean {
+    return grid.all { row -> row.all { it.number != null } }
+}
+
+fun checkSolution(grid: Array<Array<SudokuCell>>): Boolean {
+    return grid.indices.all { row ->
+        grid[row].indices.all { col ->
+            val num = grid[row][col].number ?: return@all true
+            SudokuSolver().isSellCorrect(
+                grid.map { it.map { c -> c.number ?: 0 }.toIntArray() },
+                row,
+                col,
+                num
+            )
+        }
+    }
+}
+
 
 fun generateSudokuGrid(): Array<Array<SudokuCell>> {
     val example = Grid()
